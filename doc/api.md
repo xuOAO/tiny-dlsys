@@ -626,10 +626,10 @@ Device → NDArray → autograd → ops → init → nn → optim → data
 - [x] **Step 1 — backend: Device 抽象**
   实现 `backend/device.py`：`Device` 基类、`CPUDevice`、`CUDADevice`，以及 `cpu()`、`cuda()`、`default_device()` 工厂函数。这是整个系统的地基，NDArray 绑定到具体 Device 上。
 
-- [ ] **Step 2 — backend: NDArray + CPU 后端**
+- [x] **Step 2 — backend: NDArray + CPU 后端**
   实现 `backend/ndarray.py`（NDArray 统一接口）和 `backend/backend_numpy.py`（用 NumPy 封装 CPU 算子：add / mul / matmul / reshape / sum / transpose 等）。后续所有 `Op.compute` 都通过 NDArray 调用这里。
 
-- [ ] **Step 3 — autograd: 计算图核心**
+- [x] **Step 3 — autograd: 计算图核心**
   完善 `autograd.py`：补全 `Tensor.__init__`（设备分派、dtype 处理）、`backward()`、以及核心算法 `compute_gradient_of_variables()`（拓扑排序 + 反向遍历累加梯度）和 `find_topo_sort()`。这是整个自动微分引擎。
 
 - [ ] **Step 4 — ops: 数学算子**

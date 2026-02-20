@@ -347,6 +347,7 @@ class _OpsFn:
             self._mod = _ops
         return self._mod
 
+    # 访问不存在的属性时，会调__getattr__
     def __getattr__(self, name):
         return getattr(self._get(), name)
 
