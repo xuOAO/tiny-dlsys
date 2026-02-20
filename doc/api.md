@@ -640,7 +640,7 @@ Device → NDArray → autograd → ops → init → nn → optim → data
 - [x] **Step 5 — ops: TensorTuple 算子**
   实现 `ops/ops_tuple.py`：`Stack`（沿新轴拼接多个 Tensor）和 `Split`（返回 TensorTuple），供 `Conv2d` im2col 及多输出场景使用。
 
-- [ ] **Step 6 — init: 参数初始化**
+- [x] **Step 6 — init: 参数初始化**
   实现 `init/initializers.py`：`zeros` / `ones` / `randn` / `rand` / `one_hot` / `xavier_uniform` / `xavier_normal` / `kaiming_uniform` / `kaiming_normal`。`nn` 层的参数初始化依赖此模块。
 
 - [ ] **Step 7 — nn: Module 与 Parameter 基类**
