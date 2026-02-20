@@ -30,8 +30,9 @@ class Stack(TensorOp):
         return NDArray.from_numpy(stacked, device=args[0].device)
 
     def gradient(self, out_grad: Tensor, node: Tensor) -> Tuple[Tensor, ...]:
-        # Stack 的梯度：沿 axis 拆分 out_grad，每份对应一个输入
-        return split(out_grad, self.axis, len(node.inputs)).tuple()
+        # Stack 的梯度：沿 axis 拆分后，去掉新增维度，恢复到各输入形状
+        split_grads = split(out_grad, self.axis, len(node.inputs)).tuple()
+        return tuple(g.reshape(inp.shape) for g, inp in zip(split_grads, node.inputs))
 
 
 # ---------------------------------------------------------------------------
@@ -51,8 +52,15 @@ class Split(TensorTupleOp):
         return tuple(NDArray.from_numpy(p, device=a.device) for p in parts)
 
     def gradient(self, out_grad: "TensorTuple", node: "TensorTuple") -> Tensor:
-        # Split 的梯度：沿 axis 拼接各部分的梯度
-        return stack(out_grad.tuple(), self.axis)
+        # Split 的梯度是 concatenate（不是 stack），需沿原 axis 拼回输入形状
+        in_tensor = node.inputs[0]
+        parts = [t.realize_cached_data().numpy() for t in out_grad.tuple()]
+        grad_np = np.concatenate(parts, axis=self.axis)
+        return Tensor.from_numpy(
+            grad_np,
+            device=in_tensor.device,
+            requires_grad=False,
+        )
 
 
 # ---------------------------------------------------------------------------

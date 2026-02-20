@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import builtins
 from typing import Tuple, Union
 
 import numpy as np
@@ -282,11 +283,11 @@ class Dilate(TensorOp):
 
     def gradient(self, out_grad: Tensor, node: Tensor) -> Tensor:
         a, = node.inputs
-        slices = [slice(None)] * len(out_grad.shape)
+        slices = [builtins.slice(None)] * len(out_grad.shape)
         for ax in self.axes:
             if ax < len(slices):
-                slices[ax] = slice(None, None, self.dilation + 1)
-        return slice(out_grad, tuple(slices))
+                slices[ax] = builtins.slice(None, None, self.dilation + 1)
+        return slice_op(out_grad, tuple(slices))
 
 
 # ---------------------------------------------------------------------------

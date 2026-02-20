@@ -717,3 +717,6 @@ for epoch in range(10):
         total_loss += loss.numpy()
     print(f"epoch {epoch}, loss = {total_loss / len(train_loader):.4f}")
 ```
+
+## 附：测试
+* python3 -m unittest tests.test_backprop -v
