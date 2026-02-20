@@ -637,7 +637,7 @@ Device → NDArray → autograd → ops → init → nn → optim → data
   - 逐元素：`EWiseAdd` / `AddScalar` / `EWiseMul` / `MulScalar` / `EWiseDiv` / `DivScalar` / `PowerScalar` / `Negate` / `Exp` / `Log` / `ReLU` / `Tanh`
   - 矩阵/形状：`MatMul` / `Reshape` / `Transpose` / `BroadcastTo` / `Summation` / `Slice` / `Flip` / `Dilate`
 
-- [ ] **Step 5 — ops: TensorTuple 算子**
+- [x] **Step 5 — ops: TensorTuple 算子**
   实现 `ops/ops_tuple.py`：`Stack`（沿新轴拼接多个 Tensor）和 `Split`（返回 TensorTuple），供 `Conv2d` im2col 及多输出场景使用。
 
 - [ ] **Step 6 — init: 参数初始化**
