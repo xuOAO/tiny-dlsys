@@ -290,6 +290,24 @@ class Dilate(TensorOp):
         return slice_op(out_grad, tuple(slices))
 
 
+class Pad(TensorOp):
+    """零填充算子。pad_width 格式同 numpy.pad：每维 (before, after) 对的元组。"""
+
+    def __init__(self, pad_width: Tuple[Tuple[int, int], ...]):
+        self.pad_width = pad_width
+
+    def compute(self, a: NDArray) -> NDArray:
+        return a.pad(self.pad_width)
+
+    def gradient(self, out_grad: Tensor, node: Tensor) -> Tensor:
+        a, = node.inputs
+        slices = tuple(
+            builtins.slice(p[0], p[0] + s)
+            for p, s in zip(self.pad_width, a.shape)
+        )
+        return slice_op(out_grad, slices)
+
+
 # ---------------------------------------------------------------------------
 # 函数式接口
 # ---------------------------------------------------------------------------
@@ -377,3 +395,7 @@ def flip(a: Tensor, axes: tuple) -> Tensor:
 
 def dilate(a: Tensor, axes: tuple, dilation: int) -> Tensor:
     return Dilate(axes, dilation)(a)
+
+
+def pad(a: Tensor, pad_width: tuple) -> Tensor:
+    return Pad(pad_width)(a)

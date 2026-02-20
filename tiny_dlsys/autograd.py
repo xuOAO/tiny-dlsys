@@ -311,6 +311,10 @@ def compute_gradient_of_variables(output_tensor: Tensor, out_grad: Tensor) -> No
     topo = find_topo_sort([output_tensor])
 
     for node in reversed(topo):
+        if id(node) not in node_to_grad:
+            # requires_grad=False 的中间节点，跳过
+            continue
+
         grad = sum_node_list(node_to_grad[id(node)])
         node.grad = grad
 

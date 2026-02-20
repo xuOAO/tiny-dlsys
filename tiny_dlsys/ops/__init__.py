@@ -20,5 +20,6 @@ from .ops_math import (
     slice_op as slice,
     flip,
     dilate,
+    pad,
 )
 from .ops_tuple import stack, split, tuple_get_item
