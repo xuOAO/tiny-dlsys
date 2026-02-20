@@ -86,6 +86,11 @@ class Device:
 
 class CPUDevice(Device):
     """基于 NumPy 的 CPU 设备。原始数据类型为 ``numpy.ndarray``。"""
+    backend : None
+
+    def __init__(self):
+        from . import backend_numpy as backend
+        self.backend = backend
 
     def enabled(self) -> bool:
         return True
@@ -124,6 +129,11 @@ class CPUDevice(Device):
 
 class CUDADevice(Device):
     """CUDA 设备（尚未实现）。"""
+    backend : None
+
+    def __init__(self):
+        from . import backend_cuda as backend
+        self.backend = backend
 
     def enabled(self) -> bool:
         return False
