@@ -632,7 +632,7 @@ Device → NDArray → autograd → ops → init → nn → optim → data
 - [x] **Step 3 — autograd: 计算图核心**
   完善 `autograd.py`：补全 `Tensor.__init__`（设备分派、dtype 处理）、`backward()`、以及核心算法 `compute_gradient_of_variables()`（拓扑排序 + 反向遍历累加梯度）和 `find_topo_sort()`。这是整个自动微分引擎。
 
-- [ ] **Step 4 — ops: 数学算子**
+- [x] **Step 4 — ops: 数学算子**
   实现 `ops/ops_math.py`，每个算子均需实现 `compute`（NDArray 层面前向）和 `gradient`（Tensor 层面反向）：
   - 逐元素：`EWiseAdd` / `AddScalar` / `EWiseMul` / `MulScalar` / `EWiseDiv` / `DivScalar` / `PowerScalar` / `Negate` / `Exp` / `Log` / `ReLU` / `Tanh`
   - 矩阵/形状：`MatMul` / `Reshape` / `Transpose` / `BroadcastTo` / `Summation` / `Slice` / `Flip` / `Dilate`
