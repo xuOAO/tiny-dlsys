@@ -670,8 +670,119 @@ Device → NDArray → autograd → ops → init → nn → optim → data
 - [x] **Step 11 — 端到端集成验证**
   用本文档"典型训练流程"跑通 MNIST 训练，验证前向传播、反向传播、参数更新全链路正确。此时 CPU 路径完整可用。
 
-- [ ] **Step 12 — backend: CUDA 后端（可选）**
-  实现 `backend/backend_cuda.py`，为 NDArray 的每个算子接入 CUDA kernel。由于 Device 抽象已屏蔽硬件差异，上层代码（Op / nn / optim）无需任何修改。
+- [ ] **Step 12 — 环境准备：依赖安装与可用性检查**
+
+  CUDA 后端选用 **CuPy** 管理 GPU 内存和大多数形状算子，选用 **Triton** 编写计算密集型 kernel（如 matmul）。
+  不引入 PyTorch，CuPy 与 Triton 均可独立安装。
+
+  - [ ] 在 `setup.py` 的 `extras_require` 中新增 `cuda` 可选依赖组：
+    ```python
+    extras_require={
+        "cuda": ["cupy-cuda12x", "triton"],   # 按实际 CUDA 版本选择 cupy-cudaXXX
+    }
+    ```
+  - [ ] 在项目根目录新增 `requirements-cuda.txt`，内容为 `cupy-cuda12x` 与 `triton`，方便直接 `pip install -r` 安装。
+  - [ ] 在 `CUDADevice.__init__` 中用 `try/except` 尝试 `import cupy`，失败时将 `self._available` 置为 `False`，避免无 GPU 机器导入报错。
+
+- [ ] **Step 13 — CUDADevice 完整实现**
+
+  填充 `backend/device.py` 中的 `CUDADevice`，使其满足 `Device` 基类接口。
+  原始数据类型固定为 `cupy.ndarray`（直接替换 `numpy.ndarray` 的角色），`NDArray` 层的 `.shape`、`.size`、`.dtype` 属性无需改动。
+
+  - [ ] `enabled()` — 检查实际 GPU 可用性：
+    ```python
+    def enabled(self) -> bool:
+        try:
+            import cupy as cp
+            cp.cuda.runtime.getDeviceCount()
+            return True
+        except Exception:
+            return False
+    ```
+  - [ ] `zeros / ones / randn / empty` — 分别调用 `cp.zeros / cp.ones / cp.random.randn / cp.empty` 并 `.astype(dtype)`。
+  - [ ] `from_numpy(np_array)` — `return cp.asarray(np_array)`，将 NumPy 数组上传到 GPU。
+  - [ ] `to_numpy(data)` — `return cp.asnumpy(data)`，将 CuPy 数组下载到 CPU。
+  - [ ] 更新 `CUDADevice.__init__` 中的 `self.backend` 赋值逻辑，仅在 `_available` 时导入 `backend_cuda`。
+
+- [ ] **Step 14 — backend_cuda.py：基于 CuPy 的算子层**
+
+  实现 `backend/backend_cuda.py` 中的全部函数，接口与 `backend_numpy.py` 完全相同，
+  接受并返回 `cupy.ndarray`。CuPy API 与 NumPy 高度一致，大多数函数只需将 `np.` 换成 `cp.`。
+
+  **逐元素算子**（直接使用 CuPy 运算符，无需额外封装）：
+  - [ ] `add / mul / divide / neg / power` — 对应 CuPy 运算符重载 `+  *  /  -  **`。
+  - [ ] `exp / log / tanh / sqrt / maximum` — 对应 `cp.exp / cp.log / cp.tanh / cp.sqrt / cp.maximum`。
+
+  **规约算子**：
+  - [ ] `reduce_sum(a, axis, keepdims)` — `cp.sum(a, axis=axis, keepdims=keepdims)`。
+  - [ ] `reduce_max(a, axis, keepdims)` — `cp.max(a, axis=axis, keepdims=keepdims)`。
+
+  **矩阵算子**（Step 16 中将替换为 Triton kernel）：
+  - [ ] `matmul(a, b)` — 暂用 `cp.matmul(a, b)`。
+
+  **形状算子**（Triton 不适合这类操作，均由 CuPy 实现）：
+  - [ ] `reshape / transpose / broadcast_to / getitem / setitem / flip / pad` — 对应 `cp.` 同名函数；`broadcast_to` 和 `flip` 需 `.copy()` 以返回连续内存。
+  - [ ] `dilate(a, axes, dilation)` — CuPy 无直接对应，手动实现：分配 `cp.zeros` 目标数组，用 `slice(None, None, dilation+1)` 赋值（逻辑与 `backend_numpy.py` 中相同，替换 `np` 为 `cp`）。
+
+  **工具函数**：
+  - [ ] `full(shape, val, dtype)` — `cp.full(shape, val, dtype=dtype)`。
+  - [ ] `one_hot(n, indices, dtype)` — `cp.eye(n, dtype=dtype)[indices]`。
+  - [ ] `eq / ge` — `(a == b).astype(a.dtype)` / `(a >= b).astype(a.dtype)`。
+
+- [ ] **Step 15 — CUDA 后端基础验证**
+
+  在不修改任何上层代码（Op / nn / optim）的前提下，验证 CUDA 路径的正确性。
+
+  - [ ] 在 `tests/` 中新增 `test_cuda_backend.py`，针对每类算子编写 CPU vs CUDA 对比测试：
+    计算在 CPU 和 CUDA 上各跑一遍，断言 `numpy()` 结果在浮点误差范围内相等（`np.allclose`）。
+  - [ ] 验证设备迁移：`tensor.to(cuda())` 后 `tensor.numpy()` 结果正确（`from_numpy → CuPy → back`）。
+  - [ ] 验证自动微分：在 CUDA tensor 上调用 `backward()`，梯度的 `device` 属性仍为 `cuda()`。
+  - [ ] 验证 `dilate` 的正确性（该函数是手写的，最容易出错）。
+  - [ ] 跑通 `examples/train_mnist.py` 中指定 `device=cuda()` 的前向单步，确认无报错。
+
+- [ ] **Step 16 — Triton matmul kernel（可选：性能优化）**
+
+  用 Triton 替换 `backend_cuda.py` 中暂用的 `cp.matmul`，实现分块矩阵乘法 kernel。
+  Triton kernel 接受原始 CUDA 指针，通过 `cupy_array.data.ptr` 从 CuPy 数组取得，**全程无 PyTorch**。
+
+  - [ ] 在 `backend/backend_cuda.py` 顶部添加 Triton 导入（用 `try/except` 包裹，Triton 不可用时降级到 `cp.matmul`）。
+  - [ ] 实现 `_matmul_kernel`：标准双层分块 GEMM，tile 大小设为 `BLOCK_M=128, BLOCK_N=128, BLOCK_K=32`：
+    ```python
+    @triton.jit
+    def _matmul_kernel(
+        a_ptr, b_ptr, c_ptr,
+        M, N, K,
+        stride_am, stride_ak,
+        stride_bk, stride_bn,
+        stride_cm, stride_cn,
+        BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,
+    ):
+        pid_m = tl.program_id(0)
+        pid_n = tl.program_id(1)
+        # 计算 tile 偏移，加载 A / B tile，累加到 acc，写入 C
+        ...
+    ```
+  - [ ] 实现封装函数 `matmul(a, b)` — 分配输出 `c = cp.empty((M, N), dtype=a.dtype)`，
+    计算 grid，用 `a.data.ptr / b.data.ptr / c.data.ptr` 以及字节步长（`a.strides[i] // a.dtype.itemsize`）调用 kernel，返回 `c`。
+  - [ ] 处理 batch matmul（3-D 输入）：在 Triton kernel 外层用循环或扩展 grid 处理 batch 维度。
+  - [ ] 在 `test_cuda_backend.py` 中对比 `cp.matmul` 与 Triton kernel 的输出（`np.allclose(atol=1e-3)`）。
+
+- [ ] **Step 17 — Triton reduce kernel（可选：教学示范）**
+
+  用 Triton 实现 `reduce_sum`，展示 GPU 并行规约的经典写法。此步骤教学价值大于性能收益（CuPy reduce 已足够快），可按需选做。
+
+  - [ ] 实现 `_reduce_sum_kernel`：每个 program 负责一行（或一个 tile），用 `tl.sum` 在块内规约。
+  - [ ] 仅替换 axis=-1 的 1-D 规约路径；其他 axis 组合继续使用 `cp.sum`（避免过度工程化）。
+  - [ ] 在 `test_cuda_backend.py` 中验证结果正确性。
+
+- [ ] **Step 18 — 端到端 CUDA 集成验证**
+
+  完整训练流程在 CUDA 设备上跑通，验证从数据加载到参数更新的全链路。
+
+  - [ ] 修改 `examples/train_mnist.py`，在脚本入口通过命令行参数 `--device cpu|cuda` 选择设备，默认使用 `cuda()` 若可用。
+  - [ ] 完整跑通 MNIST 训练（至少 1 个 epoch），断言最终 loss 合理（不为 NaN）、验证集准确率高于随机基线（>50%）。
+  - [ ] 对比 CPU 与 CUDA 在相同超参数下的 loss 曲线，确认数值一致（浮点误差范围内），排除 kernel 精度问题。
+  - [ ] （可选）用 `time.perf_counter` 对比每 epoch 耗时，记录加速比。
 
 ---
 
