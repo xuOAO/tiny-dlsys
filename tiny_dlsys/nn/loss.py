@@ -43,7 +43,13 @@ class SoftmaxLoss(Module):
         y_onehot = init.one_hot(num_classes, y, device=logits.device)  # (batch, num_classes)
         correct_logit = ops.summation(logits * y_onehot, axes=(1,))    # (batch,)
 
-        loss = ops.summation(log_sum_exp - correct_logit) / batch
+        sum_loss = ops.summation(log_sum_exp - correct_logit)
+        batch_t = Tensor(NDArray.from_numpy(np.array(batch, dtype=logits.dtype), device=logits.device), 
+        device=logits.device, 
+        requires_grad=False)
+
+        loss = sum_loss / batch_t
+
         return loss
 
 

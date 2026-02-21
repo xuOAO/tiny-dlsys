@@ -643,10 +643,10 @@ Device → NDArray → autograd → ops → init → nn → optim → data
 - [x] **Step 6 — init: 参数初始化**
   实现 `init/initializers.py`：`zeros` / `ones` / `randn` / `rand` / `one_hot` / `xavier_uniform` / `xavier_normal` / `kaiming_uniform` / `kaiming_normal`。`nn` 层的参数初始化依赖此模块。
 
-- [ ] **Step 7 — nn: Module 与 Parameter 基类**
+- [x] **Step 7 — nn: Module 与 Parameter 基类**
   实现 `nn/module.py`：`Parameter`（`requires_grad=True` 的 Tensor 子类）和 `Module`（`parameters()` 递归收集参数、`train()` / `eval()` 模式切换）。所有 nn 层的公共父类。
 
-- [ ] **Step 8 — nn: 各网络层**
+- [x] **Step 8 — nn: 各网络层**
   按依赖复杂度由低到高依次实现：
   - [ ] `activation.py` — `ReLU` / `Tanh` / `Sigmoid`
   - [ ] `linear.py` — `Linear`（Kaiming uniform 初始化）
@@ -657,17 +657,17 @@ Device → NDArray → autograd → ops → init → nn → optim → data
   - [ ] `conv.py` — `Conv2d`（im2col 实现，依赖 `Dilate` / `Flip`）
   - [ ] `module.py` — `Embedding`
 
-- [ ] **Step 9 — optim: 优化器**
+- [x] **Step 9 — optim: 优化器**
   - [ ] `optimizer.py` — `Optimizer` 基类（`zero_grad` / `step`）
   - [ ] `sgd.py` — SGD（支持 momentum + weight_decay）
   - [ ] `adam.py` — Adam（m/v 一阶/二阶矩 + 偏差修正）
 
-- [ ] **Step 10 — data: 数据加载**
+- [x] **Step 10 — data: 数据加载**
   - [ ] `dataset.py` — `Dataset` 基类 + `MNISTDataset`
   - [ ] `dataloader.py` — `DataLoader`（支持 shuffle）
   - [ ] 数据增强变换：`RandomFlipHorizontal` / `RandomCrop`
 
-- [ ] **Step 11 — 端到端集成验证**
+- [x] **Step 11 — 端到端集成验证**
   用本文档"典型训练流程"跑通 MNIST 训练，验证前向传播、反向传播、参数更新全链路正确。此时 CPU 路径完整可用。
 
 - [ ] **Step 12 — backend: CUDA 后端（可选）**
