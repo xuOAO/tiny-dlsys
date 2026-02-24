@@ -129,14 +129,23 @@ class CPUDevice(Device):
 
 class CUDADevice(Device):
     """CUDA 设备（尚未实现）。"""
-    backend : None
+    backend: None
 
     def __init__(self):
-        from . import backend_cuda as backend
-        self.backend = backend
+        try:
+            import cupy  # noqa: F401
+            self._available = True
+        except ImportError:
+            self._available = False
+
+        if self._available:
+            from . import backend_cuda as backend
+            self.backend = backend
+        else:
+            self.backend = None
 
     def enabled(self) -> bool:
-        return False
+        return self._available
 
 
 # ======================================================================
