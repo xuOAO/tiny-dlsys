@@ -690,12 +690,12 @@ Device → NDArray → autograd → ops → init → nn → optim → data
   - [x] 在项目根目录新增 `requirements-cuda.txt`，内容为 `cupy-cuda12x` 与 `triton`，方便直接 `pip install -r` 安装。
   - [x] 在 `CUDADevice.__init__` 中用 `try/except` 尝试 `import cupy`，失败时将 `self._available` 置为 `False`，避免无 GPU 机器导入报错。
 
-- [ ] **Step 13 — CUDADevice 完整实现**
+- [x] **Step 13 — CUDADevice 完整实现**
 
   填充 `backend/device.py` 中的 `CUDADevice`，使其满足 `Device` 基类接口。
   原始数据类型固定为 `cupy.ndarray`（直接替换 `numpy.ndarray` 的角色），`NDArray` 层的 `.shape`、`.size`、`.dtype` 属性无需改动。
 
-  - [ ] `enabled()` — 检查实际 GPU 可用性：
+  - [x] `enabled()` — 检查实际 GPU 可用性：
     ```python
     def enabled(self) -> bool:
         try:
@@ -705,10 +705,10 @@ Device → NDArray → autograd → ops → init → nn → optim → data
         except Exception:
             return False
     ```
-  - [ ] `zeros / ones / randn / empty` — 分别调用 `cp.zeros / cp.ones / cp.random.randn / cp.empty` 并 `.astype(dtype)`。
-  - [ ] `from_numpy(np_array)` — `return cp.asarray(np_array)`，将 NumPy 数组上传到 GPU。
-  - [ ] `to_numpy(data)` — `return cp.asnumpy(data)`，将 CuPy 数组下载到 CPU。
-  - [ ] 更新 `CUDADevice.__init__` 中的 `self.backend` 赋值逻辑，仅在 `_available` 时导入 `backend_cuda`。
+  - [x] `zeros / ones / randn / empty` — 分别调用 `cp.zeros / cp.ones / cp.random.randn / cp.empty` 并 `.astype(dtype)`。
+  - [x] `from_numpy(np_array)` — `return cp.asarray(np_array)`，将 NumPy 数组上传到 GPU。
+  - [x] `to_numpy(data)` — `return cp.asnumpy(data)`，将 CuPy 数组下载到 CPU。
+  - [x] 更新 `CUDADevice.__init__` 中的 `self.backend` 赋值逻辑，仅在 `_available` 时导入 `backend_cuda`。
 
 - [ ] **Step 14 — backend_cuda.py：基于 CuPy 的算子层**
 

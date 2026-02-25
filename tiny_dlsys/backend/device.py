@@ -149,6 +149,30 @@ class CUDADevice(Device):
         except Exception:
             return False
 
+    def zeros(self, shape: Tuple[int, ...], dtype: str = "float32"):
+        import cupy as cp
+        return cp.zeros(shape, dtype=dtype)
+
+    def ones(self, shape: Tuple[int, ...], dtype: str = "float32"):
+        import cupy as cp
+        return cp.ones(shape, dtype=dtype)
+
+    def randn(self, shape: Tuple[int, ...], dtype: str = "float32"):
+        import cupy as cp
+        return cp.random.randn(*shape).astype(dtype)
+
+    def empty(self, shape: Tuple[int, ...], dtype: str = "float32"):
+        import cupy as cp
+        return cp.empty(shape, dtype=dtype)
+
+    def from_numpy(self, np_array: numpy.ndarray):
+        import cupy as cp
+        return cp.asarray(np_array)
+
+    def to_numpy(self, data) -> numpy.ndarray:
+        import cupy as cp
+        return cp.asnumpy(data)
+
 
 # ======================================================================
 # 工厂函数 —— 单例模式
