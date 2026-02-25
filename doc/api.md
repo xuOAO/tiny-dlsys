@@ -710,30 +710,30 @@ Device → NDArray → autograd → ops → init → nn → optim → data
   - [x] `to_numpy(data)` — `return cp.asnumpy(data)`，将 CuPy 数组下载到 CPU。
   - [x] 更新 `CUDADevice.__init__` 中的 `self.backend` 赋值逻辑，仅在 `_available` 时导入 `backend_cuda`。
 
-- [ ] **Step 14 — backend_cuda.py：基于 CuPy 的算子层**
+- [x] **Step 14 — backend_cuda.py：基于 CuPy 的算子层**
 
   实现 `backend/backend_cuda.py` 中的全部函数，接口与 `backend_numpy.py` 完全相同，
   接受并返回 `cupy.ndarray`。CuPy API 与 NumPy 高度一致，大多数函数只需将 `np.` 换成 `cp.`。
 
   **逐元素算子**（直接使用 CuPy 运算符，无需额外封装）：
-  - [ ] `add / mul / divide / neg / power` — 对应 CuPy 运算符重载 `+  *  /  -  **`。
-  - [ ] `exp / log / tanh / sqrt / maximum` — 对应 `cp.exp / cp.log / cp.tanh / cp.sqrt / cp.maximum`。
+  - [x] `add / mul / divide / neg / power` — 对应 CuPy 运算符重载 `+  *  /  -  **`。
+  - [x] `exp / log / tanh / sqrt / maximum` — 对应 `cp.exp / cp.log / cp.tanh / cp.sqrt / cp.maximum`。
 
   **规约算子**：
-  - [ ] `reduce_sum(a, axis, keepdims)` — `cp.sum(a, axis=axis, keepdims=keepdims)`。
-  - [ ] `reduce_max(a, axis, keepdims)` — `cp.max(a, axis=axis, keepdims=keepdims)`。
+  - [x] `reduce_sum(a, axis, keepdims)` — `cp.sum(a, axis=axis, keepdims=keepdims)`。
+  - [x] `reduce_max(a, axis, keepdims)` — `cp.max(a, axis=axis, keepdims=keepdims)`。
 
   **矩阵算子**（Step 16 中将替换为 Triton kernel）：
-  - [ ] `matmul(a, b)` — 暂用 `cp.matmul(a, b)`。
+  - [x] `matmul(a, b)` — 暂用 `cp.matmul(a, b)`。
 
   **形状算子**（Triton 不适合这类操作，均由 CuPy 实现）：
-  - [ ] `reshape / transpose / broadcast_to / getitem / setitem / flip / pad` — 对应 `cp.` 同名函数；`broadcast_to` 和 `flip` 需 `.copy()` 以返回连续内存。
-  - [ ] `dilate(a, axes, dilation)` — CuPy 无直接对应，手动实现：分配 `cp.zeros` 目标数组，用 `slice(None, None, dilation+1)` 赋值（逻辑与 `backend_numpy.py` 中相同，替换 `np` 为 `cp`）。
+  - [x] `reshape / transpose / broadcast_to / getitem / setitem / flip / pad` — 对应 `cp.` 同名函数；`broadcast_to` 和 `flip` 需 `.copy()` 以返回连续内存。
+  - [x] `dilate(a, axes, dilation)` — CuPy 无直接对应，手动实现：分配 `cp.zeros` 目标数组，用 `slice(None, None, dilation+1)` 赋值（逻辑与 `backend_numpy.py` 中相同，替换 `np` 为 `cp`）。
 
   **工具函数**：
-  - [ ] `full(shape, val, dtype)` — `cp.full(shape, val, dtype=dtype)`。
-  - [ ] `one_hot(n, indices, dtype)` — `cp.eye(n, dtype=dtype)[indices]`。
-  - [ ] `eq / ge` — `(a == b).astype(a.dtype)` / `(a >= b).astype(a.dtype)`。
+  - [x] `full(shape, val, dtype)` — `cp.full(shape, val, dtype=dtype)`。
+  - [x] `one_hot(n, indices, dtype)` — `cp.eye(n, dtype=dtype)[indices]`。
+  - [x] `eq / ge` — `(a == b).astype(a.dtype)` / `(a >= b).astype(a.dtype)`。
 
 - [ ] **Step 15 — CUDA 后端基础验证**
 
