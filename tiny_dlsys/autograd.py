@@ -119,7 +119,7 @@ class Tensor(Value):
         else:
             device = device or default_device()
             np_array = np.array(array, dtype=dtype or "float32")
-            cached_data = NDArray(np_array, device=device)
+            cached_data = NDArray(device.from_numpy(np_array), device)
 
         self._init(None, [], cached_data=cached_data, requires_grad=requires_grad)
         self.grad = None

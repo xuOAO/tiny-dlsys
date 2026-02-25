@@ -735,16 +735,16 @@ Device → NDArray → autograd → ops → init → nn → optim → data
   - [x] `one_hot(n, indices, dtype)` — `cp.eye(n, dtype=dtype)[indices]`。
   - [x] `eq / ge` — `(a == b).astype(a.dtype)` / `(a >= b).astype(a.dtype)`。
 
-- [ ] **Step 15 — CUDA 后端基础验证**
+- [x] **Step 15 — CUDA 后端基础验证**
 
   在不修改任何上层代码（Op / nn / optim）的前提下，验证 CUDA 路径的正确性。
 
-  - [ ] 在 `tests/` 中新增 `test_cuda_backend.py`，针对每类算子编写 CPU vs CUDA 对比测试：
+  - [x] 在 `tests/` 中新增 `test_cuda_backend.py`，针对每类算子编写 CPU vs CUDA 对比测试：
     计算在 CPU 和 CUDA 上各跑一遍，断言 `numpy()` 结果在浮点误差范围内相等（`np.allclose`）。
-  - [ ] 验证设备迁移：`tensor.to(cuda())` 后 `tensor.numpy()` 结果正确（`from_numpy → CuPy → back`）。
-  - [ ] 验证自动微分：在 CUDA tensor 上调用 `backward()`，梯度的 `device` 属性仍为 `cuda()`。
-  - [ ] 验证 `dilate` 的正确性（该函数是手写的，最容易出错）。
-  - [ ] 跑通 `examples/train_mnist.py` 中指定 `device=cuda()` 的前向单步，确认无报错。
+  - [x] 验证设备迁移：`tensor.to(cuda())` 后 `tensor.numpy()` 结果正确（`from_numpy → CuPy → back`）。
+  - [x] 验证自动微分：在 CUDA tensor 上调用 `backward()`，梯度的 `device` 属性仍为 `cuda()`。
+  - [x] 验证 `dilate` 的正确性（该函数是手写的，最容易出错）。
+  - [x] 跑通 `examples/train_mnist.py` 中指定 `device=cuda()` 的前向单步，确认无报错。
 
 - [ ] **Step 16 — Triton matmul kernel（可选：性能优化）**
 

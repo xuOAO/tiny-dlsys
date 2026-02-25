@@ -107,11 +107,11 @@ def dilate(a, axes, dilation):
         if ax < len(new_shape):
             new_shape[ax] = new_shape[ax] * (dilation + 1)
     out = cp.zeros(new_shape, dtype=a.dtype)
-    slices = [slice(None)] * len(new_shape)
-    for ax in axes:
-        if ax < len(new_shape):
-            slices[ax] = slice(None, None, dilation + 1)
-    out[tuple(slices)] = a
+    slices = tuple(
+        slice(None, None, dilation + 1) if ax in axes else slice(None)
+        for ax in range(len(new_shape))
+    )
+    out[slices] = cp.asarray(a)
     return out
 
 
