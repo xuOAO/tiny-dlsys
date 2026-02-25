@@ -746,7 +746,20 @@ Device → NDArray → autograd → ops → init → nn → optim → data
   - [x] 验证 `dilate` 的正确性（该函数是手写的，最容易出错）。
   - [x] 跑通 `examples/train_mnist.py` 中指定 `device=cuda()` 的前向单步，确认无报错。
 
-- [ ] **Step 16 — Triton matmul kernel（可选：性能优化）**
+- [ ] **Step 16 — 端到端 CUDA 集成验证**
+
+  完整训练流程在 CUDA 设备上跑通，验证从数据加载到参数更新的全链路。
+
+  - [ ] 修改 `examples/train_mnist.py`，在脚本入口通过命令行参数 `--device cpu|cuda` 选择设备，默认使用 `cuda()` 若可用。
+  - [ ] 完整跑通 MNIST 训练（至少 1 个 epoch），断言最终 loss 合理（不为 NaN）、验证集准确率高于随机基线（>50%）。
+  - [ ] 对比 CPU 与 CUDA 在相同超参数下的 loss 曲线，确认数值一致（浮点误差范围内），排除 kernel 精度问题。
+  - [ ] （可选）用 `time.perf_counter` 对比每 epoch 耗时，记录加速比。
+
+---
+
+## 可扩展部分
+
+- [ ] **Ext-A — Triton matmul kernel（性能优化）**
 
   用 Triton 替换 `backend_cuda.py` 中暂用的 `cp.matmul`，实现分块矩阵乘法 kernel。
   Triton kernel 接受原始 CUDA 指针，通过 `cupy_array.data.ptr` 从 CuPy 数组取得，**全程无 PyTorch**。
@@ -773,22 +786,13 @@ Device → NDArray → autograd → ops → init → nn → optim → data
   - [ ] 处理 batch matmul（3-D 输入）：在 Triton kernel 外层用循环或扩展 grid 处理 batch 维度。
   - [ ] 在 `test_cuda_backend.py` 中对比 `cp.matmul` 与 Triton kernel 的输出（`np.allclose(atol=1e-3)`）。
 
-- [ ] **Step 17 — Triton reduce kernel（可选：教学示范）**
+- [ ] **Ext-B — Triton reduce kernel（教学示范）**
 
   用 Triton 实现 `reduce_sum`，展示 GPU 并行规约的经典写法。此步骤教学价值大于性能收益（CuPy reduce 已足够快），可按需选做。
 
   - [ ] 实现 `_reduce_sum_kernel`：每个 program 负责一行（或一个 tile），用 `tl.sum` 在块内规约。
   - [ ] 仅替换 axis=-1 的 1-D 规约路径；其他 axis 组合继续使用 `cp.sum`（避免过度工程化）。
   - [ ] 在 `test_cuda_backend.py` 中验证结果正确性。
-
-- [ ] **Step 18 — 端到端 CUDA 集成验证**
-
-  完整训练流程在 CUDA 设备上跑通，验证从数据加载到参数更新的全链路。
-
-  - [ ] 修改 `examples/train_mnist.py`，在脚本入口通过命令行参数 `--device cpu|cuda` 选择设备，默认使用 `cuda()` 若可用。
-  - [ ] 完整跑通 MNIST 训练（至少 1 个 epoch），断言最终 loss 合理（不为 NaN）、验证集准确率高于随机基线（>50%）。
-  - [ ] 对比 CPU 与 CUDA 在相同超参数下的 loss 曲线，确认数值一致（浮点误差范围内），排除 kernel 精度问题。
-  - [ ] （可选）用 `time.perf_counter` 对比每 epoch 耗时，记录加速比。
 
 ---
 
