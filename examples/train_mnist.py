@@ -68,9 +68,9 @@ def main():
 
     for epoch in range(args.epochs):
         t0 = time.perf_counter()
-        total_loss = 0.0
 
         model.train()
+        total_loss_tensor = None
         for x_np, y_np in train_loader:
             x_np = x_np.reshape((x_np.shape[0], -1)).astype(np.float32)
             y_np = y_np.astype(np.int32)
@@ -83,7 +83,12 @@ def main():
             loss.backward()
             optimizer.step()
 
-            total_loss += float(loss.numpy())
+            # 在设备上累加，不触发 GPU→CPU 同步
+            total_loss_tensor = loss.detach() if total_loss_tensor is None \
+                                else total_loss_tensor + loss.detach()
+
+        # epoch 结束后一次性同步
+        total_loss = float(total_loss_tensor.numpy()) / len(train_loader)
 
         total_correct = 0
         total_seen = 0
