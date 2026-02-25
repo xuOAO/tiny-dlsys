@@ -746,14 +746,14 @@ Device → NDArray → autograd → ops → init → nn → optim → data
   - [x] 验证 `dilate` 的正确性（该函数是手写的，最容易出错）。
   - [x] 跑通 `examples/train_mnist.py` 中指定 `device=cuda()` 的前向单步，确认无报错。
 
-- [ ] **Step 16 — 端到端 CUDA 集成验证**
+- [x] **Step 16 — 端到端 CUDA 集成验证**
 
   完整训练流程在 CUDA 设备上跑通，验证从数据加载到参数更新的全链路。
 
-  - [ ] 修改 `examples/train_mnist.py`，在脚本入口通过命令行参数 `--device cpu|cuda` 选择设备，默认使用 `cuda()` 若可用。
-  - [ ] 完整跑通 MNIST 训练（至少 1 个 epoch），断言最终 loss 合理（不为 NaN）、验证集准确率高于随机基线（>50%）。
-  - [ ] 对比 CPU 与 CUDA 在相同超参数下的 loss 曲线，确认数值一致（浮点误差范围内），排除 kernel 精度问题。
-  - [ ] （可选）用 `time.perf_counter` 对比每 epoch 耗时，记录加速比。
+  - [x] 修改 `examples/train_mnist.py`，在脚本入口通过命令行参数 `--device cpu|cuda` 选择设备，默认使用 `cuda()` 若可用。
+  - [x] 完整跑通 MNIST 训练（至少 1 个 epoch），断言最终 loss 合理（不为 NaN）、验证集准确率高于随机基线（>50%）。
+  - [x] 对比 CPU 与 CUDA 在相同超参数下的 loss 曲线，确认数值一致（浮点误差范围内），排除 kernel 精度问题。
+  - [x] （可选）用 `time.perf_counter` 对比每 epoch 耗时，记录加速比。
 
 ---
 

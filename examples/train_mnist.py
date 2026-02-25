@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import argparse
+import time
 from pathlib import Path
 
 import numpy as np
@@ -31,8 +33,21 @@ def resolve_train_paths() -> tuple[Path, Path]:
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--device", choices=["cpu", "cuda"], default=None,
+                        help="选择设备（默认：cuda 若可用，否则 cpu）")
+    parser.add_argument("--epochs", type=int, default=10)
+    args = parser.parse_args()
+
+    if args.device == "cuda":
+        device = tdl.cuda()
+    elif args.device == "cpu":
+        device = tdl.cpu()
+    else:
+        device = tdl.cuda() if tdl.cuda().enabled() else tdl.cpu()
+
+    print(f"使用设备: {device}")
     np.random.seed(0)
-    device = tdl.cuda() if tdl.cuda().enabled() else tdl.cpu()
     train_images, train_labels, eval_images, eval_labels = resolve_train_paths()
 
     train_dataset = MNISTDataset(str(train_images), str(train_labels))
@@ -49,11 +64,11 @@ def main():
     loss_fn = nn.SoftmaxLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-    for epoch in range(10):
+    for epoch in range(args.epochs):
+        t0 = time.perf_counter()
         total_loss = 0.0
 
         model.train()
-
         for x_np, y_np in train_loader:
             x_np = x_np.reshape((x_np.shape[0], -1)).astype(np.float32)
             y_np = y_np.astype(np.int32)
@@ -67,11 +82,10 @@ def main():
             optimizer.step()
 
             total_loss += float(loss.numpy())
-        
+
         total_correct = 0
         total_seen = 0
         model.eval()
-
         for x_np, y_np in eval_loader:
             x_np = x_np.reshape((x_np.shape[0], -1)).astype(np.float32)
             y_np = y_np.astype(np.int32)
@@ -82,10 +96,12 @@ def main():
             total_correct += int((pred == y_np).sum())
             total_seen += int(y_np.shape[0])
 
+        elapsed = time.perf_counter() - t0
         print(
             f"epoch {epoch + 1}: "
             f"loss={total_loss / len(train_loader):.4f}, "
-            f"acc={total_correct / total_seen:.4f}"
+            f"acc={total_correct / total_seen:.4f}, "
+            f"time={elapsed:.1f}s"
         )
 
 
