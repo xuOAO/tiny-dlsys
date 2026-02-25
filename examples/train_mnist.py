@@ -53,13 +53,15 @@ def main():
     train_dataset = MNISTDataset(str(train_images), str(train_labels))
     eval_dataset = MNISTDataset(str(eval_images), str(eval_labels))
 
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    eval_loader = DataLoader(eval_dataset, batch_size=64, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=512, shuffle=True)
+    eval_loader = DataLoader(eval_dataset, batch_size=512, shuffle=True)
 
     model = nn.Sequential(
-        nn.Linear(784, 128, device=device),
+        nn.Linear(784, 1024, device=device),
         nn.ReLU(),
-        nn.Linear(128, 10, device=device),
+        nn.Linear(1024, 1024, device=device),
+        nn.ReLU(),
+        nn.Linear(1024, 10, device=device),
     )
     loss_fn = nn.SoftmaxLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
