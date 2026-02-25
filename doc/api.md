@@ -676,19 +676,19 @@ Device → NDArray → autograd → ops → init → nn → optim → data
 - [x] **Step 11 — 端到端集成验证**
   用本文档"典型训练流程"跑通 MNIST 训练，验证前向传播、反向传播、参数更新全链路正确。此时 CPU 路径完整可用。
 
-- [ ] **Step 12 — 环境准备：依赖安装与可用性检查**
+- [x] **Step 12 — 环境准备：依赖安装与可用性检查**
 
   CUDA 后端选用 **CuPy** 管理 GPU 内存和大多数形状算子，选用 **Triton** 编写计算密集型 kernel（如 matmul）。
   不引入 PyTorch，CuPy 与 Triton 均可独立安装。
 
-  - [ ] 在 `setup.py` 的 `extras_require` 中新增 `cuda` 可选依赖组：
+  - [x] 在 `setup.py` 的 `extras_require` 中新增 `cuda` 可选依赖组：
     ```python
     extras_require={
         "cuda": ["cupy-cuda12x", "triton"],   # 按实际 CUDA 版本选择 cupy-cudaXXX
     }
     ```
-  - [ ] 在项目根目录新增 `requirements-cuda.txt`，内容为 `cupy-cuda12x` 与 `triton`，方便直接 `pip install -r` 安装。
-  - [ ] 在 `CUDADevice.__init__` 中用 `try/except` 尝试 `import cupy`，失败时将 `self._available` 置为 `False`，避免无 GPU 机器导入报错。
+  - [x] 在项目根目录新增 `requirements-cuda.txt`，内容为 `cupy-cuda12x` 与 `triton`，方便直接 `pip install -r` 安装。
+  - [x] 在 `CUDADevice.__init__` 中用 `try/except` 尝试 `import cupy`，失败时将 `self._available` 置为 `False`，避免无 GPU 机器导入报错。
 
 - [ ] **Step 13 — CUDADevice 完整实现**
 

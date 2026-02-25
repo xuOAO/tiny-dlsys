@@ -128,15 +128,26 @@ class CPUDevice(Device):
 
 
 class CUDADevice(Device):
-    """CUDA 设备（尚未实现）。"""
-    backend : None
+    """CUDA 设备。原始数据类型为 ``cupy.ndarray``。"""
+    backend: None
 
     def __init__(self):
-        from . import backend_cuda as backend
-        self.backend = backend
+        self._available = False
+        try:
+            import cupy  # noqa: F401
+            self._available = True
+            from . import backend_cuda as backend
+            self.backend = backend
+        except Exception:
+            self.backend = None
 
     def enabled(self) -> bool:
-        return False
+        try:
+            import cupy as cp
+            cp.cuda.runtime.getDeviceCount()
+            return True
+        except Exception:
+            return False
 
 
 # ======================================================================
